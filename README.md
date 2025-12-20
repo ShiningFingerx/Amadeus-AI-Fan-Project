@@ -5,6 +5,8 @@ Amadeus AI Fan Project EXE Version
 ---The reason for this choice is to prevent malicious individuals from modifying certain parts of the code and using Amadeus for harmful purposes.
 
 ///You need the Gemini API to use Amadeus.
+///You can obtain your API key from the following link.
+/&/ https://aistudio.google.com/api-keys
 
 🚧 Development Status
 

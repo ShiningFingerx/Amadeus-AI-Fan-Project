@@ -1,6 +1,6 @@
 Amadeus AI Fan Project EXE Version
 
-![Image Alt]([image_url](https://github.com/ShiningFingerx/Amadeus-AI-Fan-Project/blob/7f2a096e9814af8b333281fefbe35d1afb2ca00e/amadeus.PNG))
+![image alt](https://github.com/ShiningFingerx/Amadeus-AI-Fan-Project/blob/7f2a096e9814af8b333281fefbe35d1afb2ca00e/amadeus.PNG)
 
 ---First of all, I would like to state that my decision not to share the source code publicly is entirely personal.
 ---The reason for this choice is to prevent malicious individuals from modifying certain parts of the code and using Amadeus for harmful purposes.

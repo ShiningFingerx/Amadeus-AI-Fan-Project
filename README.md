@@ -1,16 +1,16 @@
-# Amadeus AI Projesi
+# Amadeus AI Project
 
-Bu proje, Steins;Gate serisindeki Amadeus yapay zekasının interaktif bir simülasyonudur. Google Gemini API tarafından desteklenmektedir.
+This project is an interactive simulation of the Amadeus AI from the *Steins;Gate* series. It is powered by the Google Gemini API.
 
-## Kurulum ve Başlatma
+## Installation and Launch
 
-1.  **Bağımlılıkları Yükleyin:**
+1. **Install Dependencies:**
     ```bash
     npm install
     ```
 
-2.  **Uygulamayı Geliştirme Modunda Başlatın:**
-    Bu komut hem React geliştirme sunucusunu hem de Electron uygulamasını aynı anda başlatır.
+2. **Start the Application in Development Mode:**  
+    This command will launch both the React development server and the Electron application simultaneously.
     ```bash
     npm run dev
     ```

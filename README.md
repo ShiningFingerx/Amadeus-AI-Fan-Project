@@ -54,6 +54,6 @@ Amadeus is still under active development.
 
 The character images and animations used in Amadeus
 
-🔗 https://amadeusproject.w
+🔗 [https://amadeusproject.w](https://amadeusproject.weebly.com/)
 
 All visual materials belong to their respective creators.

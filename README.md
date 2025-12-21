@@ -1,59 +1,56 @@
-Amadeus AI Fan Project EXE Version
+# Amadeus AI Projesi
 
-![image alt](https://github.com/ShiningFingerx/Amadeus-AI-Fan-Project/blob/7f2a096e9814af8b333281fefbe35d1afb2ca00e/amadeus.PNG)
+Bu proje, Steins;Gate serisindeki Amadeus yapay zekasının interaktif bir simülasyonudur. Google Gemini API tarafından desteklenmektedir.
 
----First of all, I would like to state that my decision not to share the source code publicly is entirely personal.
----The reason for this choice is to prevent malicious individuals from modifying certain parts of the code and using Amadeus for harmful purposes.
+## Kurulum ve Başlatma
 
-///You need the Gemini API to use Amadeus.
-///You can obtain your API key from the following link.
-/&/ https://aistudio.google.com/api-keys
+1.  **Bağımlılıkları Yükleyin:**
+    ```bash
+    npm install
+    ```
 
-🚧 Development Status
+2.  **Uygulamayı Geliştirme Modunda Başlatın:**
+    Bu komut hem React geliştirme sunucusunu hem de Electron uygulamasını aynı anda başlatır.
+    ```bash
+    npm run dev
+    ```
 
-Amadeus is still under active development.
+## Yeni Lore Ses Kütüphanesini Entegre Etme
 
--Emotion–animation links are implemented
+Amadeus'a Makise Kurisu'nun orijinal ses dosyalarını eklemek için aşağıdaki adımları izleyin. Sistem, binlerce ses dosyasını otomatik olarak işlemek üzere tasarlanmıştır.
 
--Some behaviors remain experimental
+### Adım 1: Dosyaları Doğru Klasörlere Yerleştirin
 
--Further refinement and expansion are planned
+1.  **Ses Dosyaları (`.ogg`):**
+    *   Tüm `.ogg` uzantılı ses dosyalarınızı projenin içindeki `public/sounds/lore/` klasörüne kopyalayın.
+    *   Eğer `lore` klasörü mevcut değilse, oluşturun.
 
--The project should be viewed as an evolving experiment,
- not a finished or polished application.
+2.  **Metin Dosyaları (`.txt`):**
+    *   Her ses dosyasının içeriğini barındıran `.txt` uzantılı metin dosyalarınızı `public/texts/lore/` klasörüne kopyalayın.
+    *   **ÇOK ÖNEMLİ:** Her `.txt` dosyasının adı, karşılık geldiği `.ogg` dosyasının adıyla birebir aynı olmalıdır (uzantılar hariç).
+    *   **Örnek:**
+        *   `public/sounds/lore/sg001.ogg`
+        *   `public/texts/lore/sg001.txt`
 
-🎭 Current Features
+### Adım 2: Veri Oluşturma Script'ini Çalıştırın
 
-🗨️ Sentence-level emotion tagging
+Dosyaları yerleştirdikten sonra, bu verileri uygulamanın anlayacağı bir formata dönüştürmek için bir script çalıştırmanız gerekir.
 
--Responses are split into individual sentences
+1.  Projenin ana dizininde bir terminal veya komut istemcisi açın.
+2.  Aşağıdaki komutu çalıştırın:
+    ```bash
+    npm run generate-lore
+    ```
+    *   Bu komut, `scripts/generate-lore-data.js` dosyasını çalıştıracaktır.
+    *   Script, `public/sounds/lore` ve `public/texts/lore` klasörlerindeki tüm dosyaları tarayacak ve `src/data/loreAudio.ts` adında tek bir veri dosyası oluşturacaktır.
+    *   Bu işlem birkaç saniye sürebilir. Terminalde "Lore data generated successfully!" mesajını gördüğünüzde işlem tamamlanmıştır.
 
--Each sentence is associated with an emotional state
+### Adım 3: Uygulamayı Başlatın
 
-🎨 2D emotional animations
+Veri dosyası oluşturulduktan sonra, uygulamayı normal şekilde başlatabilirsiniz.
 
--Real-time animation changes based on emotion
+```bash
+npm run dev
+```
 
-⏱️ Human-like typing speed
-
--Intentional pauses
-
--Breathing-like timing between sentences
-
-🧩 Consistent character behavior
-
--Context-aware responses
-
--Avoids random or tone-breaking replies
-
-🎧 Ambient background audio
-
--Helps frame the interaction as a scene rather than a chat
-
-🖼️ Visual & Animation Credits
-
-The character images and animations used in Amadeus
-
-🔗 [https://amadeusproject.w](https://amadeusproject.weebly.com/)
-
-All visual materials belong to their respective creators.
+Amadeus artık yeni ve genişletilmiş ses kütüphanesini Gemini'ye sunarak daha dinamik ve karaktere uygun sesli yanıtlar verecektir.

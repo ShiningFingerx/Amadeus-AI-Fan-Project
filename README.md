@@ -15,11 +15,8 @@ Bu proje, Steins;Gate serisindeki Amadeus yapay zekasının interaktif bir simü
     npm run dev
     ```
 
-Amadeus AI Fan Project (EXE Version)
-Note on Source Code Availability
+Amadeus AI Fan Project
 
-First of all, I would like to state that my decision not to share the source code publicly is entirely personal.
-The reason for this choice is to prevent malicious individuals from modifying certain parts of the code and using Amadeus for harmful purposes.
 
 🚧 Development Status
 

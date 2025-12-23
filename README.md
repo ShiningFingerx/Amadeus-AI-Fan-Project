@@ -14,6 +14,7 @@ This project is an interactive simulation of the Amadeus AI from the *Steins;Gat
     ```bash
     npm run dev
     ```
+It is located in the releases folder as an executable file.
 
 Amadeus AI Fan Project
 

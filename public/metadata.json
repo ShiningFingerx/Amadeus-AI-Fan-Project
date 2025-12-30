@@ -1,0 +1,8 @@
+{
+  "name": "AMADEUS VERSİON 1.42",
+  "description": "An interactive AI assistant inspired by Amadeus from Steins;Gate, powered by Gemini. Engage in conversation with a digital recreation of the brilliant neuroscientist Makise Kurisu.",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}

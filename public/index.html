@@ -1,0 +1,109 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amadeus AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      ::-webkit-scrollbar { width: 4px; height: 4px; }
+      ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
+      ::-webkit-scrollbar-thumb { background: #ff8c00; border-radius: 10px; }
+
+      html, body, #root { height: 100vh; width: 100vw; margin: 0; padding: 0; overflow: hidden; background-color: #000000; }
+      body { font-family: 'Electrolize', sans-serif; }
+
+      body::before {
+        content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        z-index: 1000; background-size: 100% 4px, 3px 100%; pointer-events: none;
+      }
+
+      @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+      .animate-marquee { display: inline-block; white-space: nowrap; animation: marquee 60s linear infinite; }
+
+      /* Glitch Effect - Enhanced Jitter */
+      .cognitive-glitch {
+        animation: glitch-vibrate 0.2s cubic-bezier(.25,.46,.45,.94) both infinite;
+        filter: hue-rotate(15deg) contrast(1.2);
+      }
+      @keyframes glitch-vibrate {
+        0% { transform: translate(0); }
+        10% { transform: translate(-3px, 1px) skewX(2deg); }
+        30% { transform: translate(3px, -2px) skewX(-1deg); }
+        50% { transform: translate(-1px, 3px); }
+        70% { transform: translate(2px, -1px); }
+        90% { transform: translate(-2px, -1px); }
+        100% { transform: translate(0); }
+      }
+
+      @keyframes scroll-code { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
+      .animate-scroll-code { animation: scroll-code 20s linear infinite; }
+
+      /* Kırmızı Son - Karanlık ve Derin Siyah */
+      .ending-red { 
+        background: #000000 !important;
+        animation: red-distortion 1.5s ease-in-out infinite alternate;
+      }
+      @keyframes red-distortion {
+        from { box-shadow: inset 0 0 50px rgba(153, 27, 27, 0.1); }
+        to { box-shadow: inset 0 0 150px rgba(153, 27, 27, 0.3); }
+      }
+
+      /* Neural Node Animation for Blue Ending */
+      .neural-node {
+        position: absolute;
+        width: 4px;
+        height: 4px;
+        background: #22d3ee;
+        border-radius: 50%;
+        box-shadow: 0 0 10px #22d3ee;
+        animation: float-neural 20s linear infinite;
+      }
+      @keyframes float-neural {
+        from { transform: translateY(110vh) translateX(0); opacity: 0; }
+        10% { opacity: 0.5; }
+        90% { opacity: 0.5; }
+        to { transform: translateY(-10vh) translateX(50px); opacity: 0; }
+      }
+
+      .neural-path {
+        position: absolute;
+        width: 1px;
+        background: linear-gradient(to top, transparent, rgba(34, 211, 238, 0.2), transparent);
+        height: 100vh;
+        animation: sway 10s ease-in-out infinite alternate;
+      }
+      @keyframes sway {
+        from { transform: skewX(-5deg); opacity: 0.1; }
+        to { transform: skewX(5deg); opacity: 0.2; }
+      }
+
+      @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+      .animate-fade-in { animation: fade-in 1s ease-out forwards; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "remark-gfm": "https://esm.sh/remark-gfm@^4.0.1"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="index.tsx"></script>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html>

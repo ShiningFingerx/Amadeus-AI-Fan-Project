@@ -24,64 +24,79 @@
         z-index: 1000; background-size: 100% 4px, 3px 100%; pointer-events: none;
       }
 
-      @keyframes marquee { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
-      .animate-marquee { display: inline-block; white-space: nowrap; animation: marquee 60s linear infinite; }
-
-      /* Glitch Effect - Enhanced Jitter */
-      .cognitive-glitch {
-        animation: glitch-vibrate 0.2s cubic-bezier(.25,.46,.45,.94) both infinite;
-        filter: hue-rotate(15deg) contrast(1.2);
-      }
-      @keyframes glitch-vibrate {
+      /* --- GLITCH / BOZULMA EFEKTLERİ --- */
+      @keyframes glitch-shake {
         0% { transform: translate(0); }
-        10% { transform: translate(-3px, 1px) skewX(2deg); }
-        30% { transform: translate(3px, -2px) skewX(-1deg); }
-        50% { transform: translate(-1px, 3px); }
-        70% { transform: translate(2px, -1px); }
-        90% { transform: translate(-2px, -1px); }
+        20% { transform: translate(-5px, 5px); }
+        40% { transform: translate(-5px, -5px); }
+        60% { transform: translate(5px, 5px); }
+        80% { transform: translate(5px, -5px); }
         100% { transform: translate(0); }
       }
 
-      @keyframes scroll-code { 0% { transform: translateY(0); } 100% { transform: translateY(-50%); } }
-      .animate-scroll-code { animation: scroll-code 20s linear infinite; }
-
-      /* Kırmızı Son - Karanlık ve Derin Siyah */
-      .ending-red { 
-        background: #000000 !important;
-        animation: red-distortion 1.5s ease-in-out infinite alternate;
-      }
-      @keyframes red-distortion {
-        from { box-shadow: inset 0 0 50px rgba(153, 27, 27, 0.1); }
-        to { box-shadow: inset 0 0 150px rgba(153, 27, 27, 0.3); }
+      @keyframes glitch-color {
+        0% { text-shadow: 2px 0 red, -2px 0 blue; }
+        25% { text-shadow: -2px 0 red, 2px 0 blue; }
+        50% { text-shadow: 2px 0 blue, -2px 0 green; }
+        75% { text-shadow: -2px 0 green, 2px 0 red; }
+        100% { text-shadow: 2px 0 red, -2px 0 blue; }
       }
 
-      /* Neural Node Animation for Blue Ending */
+      @keyframes glitch-flicker {
+        0% { opacity: 1; }
+        10% { opacity: 0.1; }
+        20% { opacity: 1; }
+        30% { opacity: 0.8; }
+        40% { opacity: 0.2; }
+        50% { opacity: 1; }
+        100% { opacity: 1; }
+      }
+
+      .cognitive-glitch {
+        animation: glitch-shake 0.1s infinite, glitch-flicker 0.2s infinite;
+        filter: hue-rotate(90deg) contrast(150%) brightness(120%);
+      }
+
+      .cognitive-glitch * {
+        animation: glitch-color 0.1s infinite !important;
+      }
+
+      /* --- SON EKRAN ANİMASYONLARI --- */
+      @keyframes scroll-code { 
+        0% { transform: translateY(-50%); } 
+        100% { transform: translateY(0%); } 
+      }
+
+      .ending-red { background: #000000 !important; }
+      .ending-blue { background: radial-gradient(circle at center, #001a1a 0%, #000 100%); }
+      .ending-normal { background: radial-gradient(circle at center, #062a1e 0%, #000 100%); }
+
       .neural-node {
         position: absolute;
-        width: 4px;
-        height: 4px;
+        width: 3px; height: 3px;
         background: #22d3ee;
         border-radius: 50%;
-        box-shadow: 0 0 10px #22d3ee;
-        animation: float-neural 20s linear infinite;
-      }
-      @keyframes float-neural {
-        from { transform: translateY(110vh) translateX(0); opacity: 0; }
-        10% { opacity: 0.5; }
-        90% { opacity: 0.5; }
-        to { transform: translateY(-10vh) translateX(50px); opacity: 0; }
+        box-shadow: 0 0 15px #22d3ee, 0 0 30px #0891b2;
+        animation: float-neural 15s linear infinite;
       }
 
       .neural-path {
         position: absolute;
-        width: 1px;
-        background: linear-gradient(to top, transparent, rgba(34, 211, 238, 0.2), transparent);
-        height: 100vh;
-        animation: sway 10s ease-in-out infinite alternate;
+        width: 1px; height: 100vh;
+        background: linear-gradient(to bottom, transparent, rgba(34, 211, 238, 0.2), transparent);
+        animation: slide-path 20s linear infinite;
       }
-      @keyframes sway {
-        from { transform: skewX(-5deg); opacity: 0.1; }
-        to { transform: skewX(5deg); opacity: 0.2; }
+
+      @keyframes float-neural {
+        0% { transform: translateY(110vh) translateX(0); opacity: 0; }
+        20% { opacity: 0.6; }
+        80% { opacity: 0.6; }
+        100% { transform: translateY(-10vh) translateX(20px); opacity: 0; }
+      }
+
+      @keyframes slide-path {
+        from { transform: translateX(-100vw); }
+        to { transform: translateX(100vw); }
       }
 
       @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
@@ -95,15 +110,16 @@
     "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
     "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
     "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
-    "remark-gfm": "https://esm.sh/remark-gfm@^4.0.1"
+    "remark-gfm": "https://esm.sh/remark-gfm@^4.0.1",
+    "three": "https://esm.sh/three@^0.182.0",
+    "three/": "https://esm.sh/three@^0.182.0/",
+    "@pixiv/three-vrm": "https://esm.sh/@pixiv/three-vrm@^3.4.4"
   }
 }
 </script>
-<link rel="stylesheet" href="/index.css">
 </head>
   <body>
     <div id="root"></div>
     <script type="module" src="index.tsx"></script>
-  <script type="module" src="/index.tsx"></script>
-</body>
+  </body>
 </html>

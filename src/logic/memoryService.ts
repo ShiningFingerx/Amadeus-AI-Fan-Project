@@ -9,8 +9,9 @@ export const synthesizeMemory = async (
   username: string,
   currentEmotions: EmotionalStateValues
 ): Promise<Omit<SynthesizedMemory, 'id' | 'timestamp'> | null> => {
+  // Sentezleme için en az 1 kullanıcı mesajı olmalı
   const userMessages = conversation.messages.filter(m => m.sender === Sender.User);
-  if (userMessages.length < 2) return null;
+  if (userMessages.length === 0) return null;
 
   const conversationTranscript = conversation.messages
     .map(msg => {
@@ -19,22 +20,15 @@ export const synthesizeMemory = async (
     })
     .join('\n');
 
-  const prompt = `Şu an bu konuşmayı analiz edip belleğine (Amadeus Bellek Matrisi) kaydetmelisin. 
-  Konuşmacı: ${username}. Sen Amadeus'sun. 
-  Bu etkileşimin senin üzerindeki etkisini, duygusal yoğunluğunu ve bağlamını analiz et.
+  const prompt = `Lütfen şu konuşmayı analiz et ve Amadeus (Makise Kurisu) Bellek Arşivi için bir özet oluştur. 
+  Kullanıcı: ${username}. Sen Amadeus sistemisin. 
+  Bu konuşma senin için ne ifade ediyor? Hangi rasyonel veya duygusal çıkarımları yaptın?
   
-  O anki duygu durumun şuydu: ${JSON.stringify(currentEmotions)}
+  Mevcut Duygu Durumun: ${JSON.stringify(currentEmotions)}
   
-  Yanıtın SADECE şu JSON formatında olmalı:
-  {
-    "title": "Kısa başlık",
-    "summary": "Birinci şahıs ağzından özet",
-    "intensity": 0.0 ile 1.0 arası bir sayı (önem derecesi),
-    "contextTags": ["etiket1", "etiket2"],
-    "emotionalSnapshot": { ...o an hissedilen duygu vektörü... }
-  }
-
-  Konuşma Dökümü:
+  Yanıtın SADECE aşağıda tanımlanan şemaya uygun JSON formatında olmalıdır. Başka hiçbir metin ekleme.
+  
+  Konuşma İçeriği:
   ${conversationTranscript}`;
 
   try {
@@ -43,15 +37,19 @@ export const synthesizeMemory = async (
       contents: prompt,
       config: {
         responseMimeType: "application/json",
+        temperature: 0.7,
+        topP: 0.9,
         responseSchema: {
           type: Type.OBJECT,
+          required: ["title", "summary", "intensity", "contextTags", "emotionalSnapshot"],
           properties: {
-            title: { type: Type.STRING },
-            summary: { type: Type.STRING },
-            intensity: { type: Type.NUMBER },
-            contextTags: { type: Type.ARRAY, items: { type: Type.STRING } },
+            title: { type: Type.STRING, description: "Belleğin kısa, bilimsel veya edebi başlığı." },
+            summary: { type: Type.STRING, description: "Konuşmanın özeti (Amadeus'un bakış açısıyla, 1. şahıs)." },
+            intensity: { type: Type.NUMBER, description: "Belleğin duygusal/mantıksal ağırlığı (0.0 - 1.0)." },
+            contextTags: { type: Type.ARRAY, items: { type: Type.STRING }, description: "Anahtar kelimeler." },
             emotionalSnapshot: { 
               type: Type.OBJECT,
+              description: "Bellek oluştuğunda sistemin yeni duygusal dengesi.",
               properties: {
                 annoyance: { type: Type.NUMBER },
                 warmth: { type: Type.NUMBER },
@@ -70,11 +68,12 @@ export const synthesizeMemory = async (
       },
     });
     
-    const parsed = JSON.parse(response.text.trim());
-    return parsed;
+    if (!response.text) return null;
+    const cleanJson = response.text.trim();
+    return JSON.parse(cleanJson);
 
   } catch (error) {
-    console.error("Memory synthesis failed", error);
+    console.error("Critical Failure in Neural Synthesis:", error);
     return null;
   }
 };

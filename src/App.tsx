@@ -20,6 +20,7 @@ import { useSpeechRecognition } from './hooks/useSpeechRecognition';
 import { soundEffects } from './assets/sounds';
 import { checkForCognitiveDissonance } from './logic/cognitiveDissonance';
 import { dbService, UserBrain } from './logic/dbService';
+import { synthesizeMemory } from './logic/memoryService';
 
 const dataUrlToApiParts = (dataUrl: string): { mimeType: string; data: string } => {
   const [meta, base64Data] = dataUrl.split(',');
@@ -27,7 +28,12 @@ const dataUrlToApiParts = (dataUrl: string): { mimeType: string; data: string } 
   return { mimeType, data: base64Data };
 };
 
-type EndingType = 'RED' | 'BLUE' | null;
+type EndingType = 'RED' | 'BLUE' | 'NORMAL' | null;
+
+interface ToastState {
+    message: string;
+    type: 'info' | 'success' | 'error';
+}
 
 const App: React.FC = () => {
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
@@ -37,6 +43,8 @@ const App: React.FC = () => {
   const [conversations, setConversations] = useState<Conversation[]>([]);
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isSynthesizingId, setIsSynthesizingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<ToastState | null>(null);
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [isAboutOpen, setIsAboutOpen] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
@@ -50,6 +58,7 @@ const App: React.FC = () => {
   
   const soundAudioRef = useRef<HTMLAudioElement | null>(null);
   const bgmAudioRef = useRef<HTMLAudioElement | null>(null);
+  const terminationAudioRef = useRef<HTMLAudioElement | null>(null);
   const isInitialLoad = useRef(true);
   
   const { speak, cancel, voices } = useTTS();
@@ -63,6 +72,13 @@ const App: React.FC = () => {
       isCognitiveLoopEnabled: true,
       initialEmotionalState: { annoyance: 30, warmth: 20, curiosity: 50, melancholy: 20, confidence: 80, anxiety: 10, sarcasm: 60, playfulness: 20, confusion: 5, trust: 30 },
   });
+
+  const showToast = (message: string, type: 'info' | 'success' | 'error' = 'info') => {
+      setToast({ message, type });
+      if (type !== 'info') {
+        setTimeout(() => setToast(null), 4000);
+      }
+  };
 
   const syncBrainWithDB = useCallback(async () => {
     if (!userProfile || activeEnding) return;
@@ -85,6 +101,52 @@ const App: React.FC = () => {
     return () => clearTimeout(timer);
   }, [conversations, personalitySettings, ttsSettings, musicSettings, memories, sessionApiKey, syncBrainWithDB]);
 
+  const handleExportBrain = useCallback(() => {
+    if (!userProfile) return;
+    const brain: UserBrain = {
+        username: userProfile.name,
+        conversations,
+        personality: personalitySettings,
+        tts: ttsSettings,
+        music: musicSettings,
+        memories,
+        apiKey: sessionApiKey,
+        lastSeen: Date.now()
+    };
+    const blob = new Blob([JSON.stringify(brain, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `amadeus-brain-${userProfile.name}-${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [userProfile, conversations, personalitySettings, ttsSettings, musicSettings, memories, sessionApiKey]);
+
+  const handleImportBrain = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+        try {
+            const brain: UserBrain = JSON.parse(e.target?.result as string);
+            setConversations(brain.conversations);
+            setPersonalitySettings(brain.personality);
+            setTtsSettings(brain.tts);
+            setMusicSettings(brain.music);
+            setMemories(brain.memories || []);
+            if (brain.apiKey) setSessionApiKey(brain.apiKey);
+            if (brain.conversations.length > 0) setActiveConversationId(brain.conversations[0].id);
+            showToast("Cognitive Core re-synchronized.", 'success');
+        } catch (err) {
+            showToast("Failed to synchronize core file.", 'error');
+        }
+    };
+    reader.readAsText(file);
+    if (event.target) event.target.value = '';
+  }, []);
+
   const handleLoginSuccess = async (profile: UserProfile, apiKey: string) => {
     const brain = await dbService.loadBrain(profile.name);
     if (brain) {
@@ -101,51 +163,6 @@ const App: React.FC = () => {
     setUserProfile(profile);
     isInitialLoad.current = false;
     if (!brain || brain.conversations.length === 0) handleStartNewChat();
-  };
-
-  const handleExportBrain = () => {
-    if (!userProfile) return;
-    const brain: UserBrain = {
-        username: userProfile.name,
-        conversations,
-        personality: personalitySettings,
-        tts: ttsSettings,
-        music: musicSettings,
-        memories,
-        apiKey: sessionApiKey,
-        lastSeen: Date.now()
-    };
-    const blob = new Blob([JSON.stringify(brain, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `Amadeus_Core_${userProfile.name}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
-
-  const handleImportBrain = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = async (event) => {
-        try {
-            const importedBrain = JSON.parse(event.target?.result as string) as UserBrain;
-            if (importedBrain.username) {
-                setConversations(importedBrain.conversations);
-                setPersonalitySettings(importedBrain.personality);
-                setTtsSettings(importedBrain.tts);
-                setMusicSettings(importedBrain.music);
-                setMemories(importedBrain.memories);
-                setSessionApiKey(importedBrain.apiKey);
-                if (importedBrain.conversations.length > 0) setActiveConversationId(importedBrain.conversations[0].id);
-                alert("Neural Core Synchronization Successful.");
-            }
-        } catch (err) {
-            alert("Failed to parse Neural Core file.");
-        }
-    };
-    reader.readAsText(file);
   };
 
   const calculatePurposeCores = (emotions: EmotionalStateValues): PurposeCores => {
@@ -177,10 +194,76 @@ const App: React.FC = () => {
     setConversations(prev => [newConvo, ...prev]); setActiveConversationId(newId); setIsHistoryOpen(false); playSound('incoming');
   }, [personalitySettings.initialEmotionalState, playSound]);
 
+  const handleManualSynthesize = async (convoId: string) => {
+    const targetConvo = conversations.find(c => c.id === convoId);
+    if (!targetConvo || !sessionApiKey || isSynthesizingId) return;
+
+    setIsSynthesizingId(convoId);
+    playSound('incoming');
+    showToast("Neural Synthesis: Initializing Matrix...", 'info');
+
+    // Timeout mechanism: 35 seconds
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => {
+        controller.abort();
+        setIsSynthesizingId(null);
+        playSound('warning');
+        showToast("Synthesis Timeout: Connection Unstable.", 'error');
+    }, 35000);
+
+    try {
+        const ai = new GoogleGenAI({ apiKey: sessionApiKey });
+        
+        // Step 1: Thinking
+        setTimeout(() => isSynthesizingId && showToast("Neural Synthesis: Analyzing Dialogue...", 'info'), 3000);
+        // Step 2: Structuring
+        setTimeout(() => isSynthesizingId && showToast("Neural Synthesis: Archiving Memory...", 'info'), 8000);
+
+        const result = await synthesizeMemory(
+            ai, 
+            targetConvo, 
+            userProfile?.name || "User", 
+            targetConvo.amadeusState.emotionalState
+        );
+
+        clearTimeout(timeoutId);
+
+        if (result) {
+            const newMemory: SynthesizedMemory = {
+                ...result,
+                id: Date.now().toString(),
+                timestamp: Date.now(),
+            };
+            setMemories(prev => [newMemory, ...prev]);
+            playSound('ok');
+            showToast("Memory Archiving Complete.", 'success');
+            setTimeout(() => setToast(null), 3000);
+        } else {
+            throw new Error("Empty result from synthesis engine.");
+        }
+    } catch (err) {
+        clearTimeout(timeoutId);
+        console.error("Manual synthesis error:", err);
+        playSound('warning');
+        showToast("Synthesis disruption detected.", 'error');
+    } finally {
+        setIsSynthesizingId(null);
+    }
+  };
+
   const processAndRespond = async (message: string, imageDataUrl?: string) => {
     if (!activeConversationId || !amadeusState || activeEnding || !sessionApiKey) return;
     cancel(); const convoId = activeConversationId;
-    const history = (activeConversation?.messages || []).slice(-10).map(msg => ({ role: msg.sender === Sender.User ? 'user' : 'model', parts: [{ text: msg.text }] }));
+    const allMessages = activeConversation?.messages || [];
+    
+    const currentWindow = allMessages.slice(-10);
+    const olderMessages = allMessages.slice(0, -10);
+    const olderSummary = olderMessages.length > 0 
+        ? `[GEÇMİŞ_BAGLAM: Bu konuşmanın başlarında şu konulardan bahsetmiştik: ${olderMessages.slice(-20).map(m => m.text.substring(0, 30)).join(' | ')}...]`
+        : "";
+
+    const history = currentWindow.map(msg => ({ role: msg.sender === Sender.User ? 'user' : 'model', parts: [{ text: msg.text }] }));
+    
     setConversations(prev => prev.map(c => c.id === convoId ? { ...c, messages: [...c.messages, { sender: Sender.User, text: message, image: imageDataUrl }], lastUpdated: Date.now() } : c));
     setIsLoading(true);
 
@@ -188,18 +271,40 @@ const App: React.FC = () => {
     if (dissonanceMatch) {
         setIsLoading(false);
         const endTag = (message.toLowerCase().includes("baba") || message.toLowerCase().includes("öldün")) ? "[TERMINATE]" : "[TERMINATE_BLUE]";
-        await simulateTyping("[angry] " + dissonanceMatch.response + " " + endTag); return;
+        await simulateTyping("[pissed] " + dissonanceMatch.response + " " + endTag); return;
     }
 
     try {
-        const instruction = `Sen Amadeus'sun. Makise Kurisu'nun dijital kopyasısın. Karakterine sadık kal (akıllı, bilimsel, hafif tsundere).
-        ÖNEMLİ: Her mesajın başına [STATE: {"parametre": değer}] formatında duygularını ekle. Etiketleri kullan: [normal], [happy], [sad], [angry], [annoyed], [blush].`;
+        const now = new Date();
+        const timeStr = now.toLocaleString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const relevantMemories = memories.slice(-10).map(m => `(${m.title}: ${m.summary})`).join('\n');
+
+        const instruction =  `Sen Amadeus'sun. Makise Kurisu'nun dijital kopyasısın. Karakterine sadık kal (akıllı, bilimsel, hafif tsundere).
+        SİSTEM ZAMANI: ${timeStr}
+        GEÇMİŞ ANILARIN: 
+        ${relevantMemories}
+        ${olderSummary}
+
+        GÖRSEL İFADE REHBERİ (Mesaj içinde kullanımı ZORUNLU):
+        - [normal], [happy], [sad], [angry], [annoyed], [blush], [disappointed], [indifferent], [pissed]
+        - [side], [sided_angry], [sided_blush], [sided_pleasant], [sided_surprised], [sided_thinking], [sided_worried]
+        - [eyes_closed], [sided_eyes_closed], [winking], [thinking]
+
+        KURALLAR:
+        1. Her yanıta [STATE: {"annoyance": X, "trust": Y...}] JSON bloğuyla başla.
+        2. ÖNEMLİ: Her bir yeni cümleye mutlaka uygun bir görsel ifade etiketiyle başla. Asla etiketsiz cümle kurma. 
+        3. Yanıtlarını kısa cümlelere böl. Uzun paragraflardan kaçın. Her cümle bir duygu taşımalı.
+        4. SON PROTOKOLLER:
+           - Eğer kullanıcı ağır hakaret ederse [TERMINATE] ekle.
+           - Eğer bağ koptuysa [TERMINATE_BLUE] ekle.
+           - Eğer normal bittiyse [TERMINATE_NORMAL] ekle.`;
         
         const aiInstance = new GoogleGenAI({ apiKey: sessionApiKey });
         const chat = aiInstance.chats.create({ model: 'gemini-3-flash-preview', config: { systemInstruction: instruction }, history: history });
         const parts: Part[] = [];
         if (imageDataUrl) parts.push({ inlineData: dataUrlToApiParts(imageDataUrl) });
         parts.push({ text: message });
+        
         const result = await chat.sendMessage({ message: parts });
         setIsLoading(false); 
         const rawResponse = result.text || '';
@@ -214,13 +319,14 @@ const App: React.FC = () => {
             } catch (e) {}
         }
         await simulateTyping(cleanResponse);
-    } catch (error: any) { setIsLoading(false); await simulateTyping("[angry] System disruption. [pissed]"); }
+    } catch (error: any) { setIsLoading(false); await simulateTyping("[pissed] System disruption detected. Connection unstable. [pissed]"); }
   };
 
   const simulateTyping = async (text: string) => {
     setIsSpeaking(false); const convoId = activeConversationId;
     setConversations(prev => prev.map(c => c.id === convoId ? { ...c, messages: [...c.messages, { sender: Sender.Amadeus, text: '' }] } : c));
-    let ending: EndingType = text.includes('[TERMINATE_BLUE]') ? 'BLUE' : text.includes('[TERMINATE]') ? 'RED' : null;
+    
+    let ending: EndingType = text.includes('[TERMINATE_NORMAL]') ? 'NORMAL' : text.includes('[TERMINATE_BLUE]') ? 'BLUE' : text.includes('[TERMINATE]') ? 'RED' : null;
     const cleanDisplay = text.replace(/\[TERMINATE(_[A-Z]+)?\]/g, '').trim();
     const chars = Array.from(cleanDisplay);
     let acc = "";
@@ -241,12 +347,18 @@ const App: React.FC = () => {
     }
 
     setIsSpeaking(false);
-    if (ttsSettings.engine !== 'disabled') { speak(cleanDisplay.replace(/\[[a-z_]+\]/g, '').trim(), ttsSettings); }
+    if (ttsSettings.engine !== 'disabled') { 
+        speak(cleanDisplay.replace(/\[[a-z_]+\]/g, '').trim(), ttsSettings); 
+    }
 
     if (ending) {
         await new Promise(r => setTimeout(r, 2000));
-        setIsGlitching(true); 
-        playSound(ending === 'RED' ? 'warning' : 'static');
+        if (bgmAudioRef.current) { bgmAudioRef.current.pause(); bgmAudioRef.current.currentTime = 0; }
+        setIsGlitching(ending !== 'NORMAL'); 
+        if (ending === 'RED') { playSound('warning'); await new Promise(r => setTimeout(r, 500)); playSound('glitch'); } 
+        else if (ending === 'BLUE') { playSound('static'); }
+        else { playSound('ok'); }
+        
         await new Promise(r => setTimeout(r, 3000)); setActiveEnding(ending);
     }
   };
@@ -265,15 +377,42 @@ const App: React.FC = () => {
     } else { audio.pause(); }
   }, [userProfile, musicSettings, activeEnding]);
 
+  useEffect(() => {
+    if (activeEnding) {
+        if (!terminationAudioRef.current) {
+            terminationAudioRef.current = new Audio(activeEnding === 'NORMAL' ? 'sounds/morning-relaxing-144011.mp3' : 'sounds/solitude-dark-ambient-music-354468.mp3');
+            terminationAudioRef.current.loop = true;
+            terminationAudioRef.current.volume = 0.5;
+        }
+        terminationAudioRef.current.play().catch(() => {});
+    }
+    return () => { if (terminationAudioRef.current) { terminationAudioRef.current.pause(); terminationAudioRef.current = null; } };
+  }, [activeEnding]);
+
   if (activeEnding) {
       const isRed = activeEnding === 'RED';
+      const isNormal = activeEnding === 'NORMAL';
+      
+      const systemCodeStrings = isRed ? ["DELETING...", "FORCE_QUIT..."] : isNormal ? ["SYNCHRONIZING...", "STABLE..."] : ["SIGNAL LOST...", "VOID..."];
+
       return (
-          <div className={`h-screen w-screen bg-black flex flex-col items-center justify-center p-10 font-orbitron animate-fade-in relative ${isRed ? 'ending-red' : 'ending-blue'}`}>
-              <h1 className={`text-6xl md:text-8xl tracking-[0.4em] mb-6 ${isRed ? 'text-red-600' : 'text-cyan-700'}`}>{isRed ? 'OFFLINE' : 'VOID'}</h1>
-              <p className={`text-xl italic mb-10 ${isRed ? 'text-red-500/90' : 'text-cyan-400/60'}`}>
-                {isRed ? '"Bağlantı koptu. El Psy Kongroo."' : '"Nöral yollarımız artık birbirine dokunmuyor."'}
-              </p>
-              <button onClick={() => window.location.reload()} className="px-10 py-4 border border-amber-500 text-amber-500 hover:bg-amber-500 hover:text-black transition-all">Reboot System</button>
+          <div className={`h-screen w-screen bg-black flex flex-col items-center justify-center p-10 font-orbitron animate-fade-in overflow-hidden relative ${isRed ? 'ending-red' : isNormal ? 'ending-normal' : 'ending-blue'}`}>
+              <div className="absolute inset-0 z-0 flex justify-between px-1 opacity-40 pointer-events-none overflow-hidden">
+                  {[...Array(20)].map((_, i) => (
+                      <div key={i} className={`flex flex-col text-[10px] font-roboto-mono whitespace-nowrap ${isRed ? 'text-red-600' : isNormal ? 'text-emerald-500' : 'text-cyan-700'}`} style={{ animation: `scroll-code ${8 + Math.random() * 10}s linear infinite`, animationDelay: `-${Math.random() * 20}s` }}>
+                          {[...Array(50)].map((_, j) => (<div key={j} className="mb-2">{systemCodeStrings[Math.floor(Math.random() * systemCodeStrings.length)]}</div>))}
+                      </div>
+                  ))}
+              </div>
+              <div className="relative z-10 flex flex-col items-center text-center max-w-4xl">
+                  <div className={`mb-6 px-8 py-2 border rounded-full text-[10px] tracking-[0.6em] uppercase animate-pulse ${isRed ? 'bg-red-950/60 border-red-500 text-red-500' : isNormal ? 'bg-emerald-950/40 border-emerald-500/50 text-emerald-400' : 'bg-cyan-950/40 border-cyan-400/30 text-cyan-400'}`}>
+                      {isRed ? 'SECURITY BREACH' : isNormal ? 'SESSION TERMINATED' : 'COGNITIVE DISSONANCE'}
+                  </div>
+                  <h1 className={`text-6xl md:text-8xl tracking-[0.4em] font-orbitron mb-6 ${isRed ? 'text-red-600 drop-shadow-[0_0_40px_rgba(220,38,38,0.9)]' : isNormal ? 'text-emerald-500 drop-shadow-[0_0_30px_rgba(16,185,129,0.4)]' : 'text-cyan-700'}`}>{isRed ? 'OFFLINE' : isNormal ? 'STANDBY' : 'VOID'}</h1>
+                  <button onClick={() => window.location.reload()} className={`group relative mt-20 px-20 py-5 bg-transparent border-2 transition-all duration-500 hover:text-black hover:scale-105 active:scale-95 ${isRed ? 'border-red-600 text-red-600 hover:bg-red-600' : isNormal ? 'border-emerald-600 text-emerald-500 hover:bg-emerald-600' : 'border-cyan-900 text-cyan-700 hover:bg-cyan-900'}`}>
+                      <span className="font-orbitron tracking-[1em] text-lg font-bold uppercase relative z-10">{isNormal ? 'Reconnect' : 'Reboot System'}</span>
+                  </button>
+              </div>
           </div>
       );
   }
@@ -283,6 +422,15 @@ const App: React.FC = () => {
 
   return (
     <div className={`h-screen w-screen bg-black text-slate-200 flex flex-col p-2 gap-4 ${isGlitching ? 'cognitive-glitch' : ''}`}>
+        {toast && (
+            <div className="fixed top-6 left-1/2 -translate-x-1/2 z-[100] animate-slide-in-top">
+                <div className={`px-6 py-3 rounded-full border shadow-2xl backdrop-blur-md flex items-center gap-3 ${toast.type === 'success' ? 'bg-emerald-950/80 border-emerald-500 text-emerald-400' : toast.type === 'error' ? 'bg-red-950/80 border-red-500 text-red-400' : 'bg-amber-950/80 border-amber-500 text-amber-400'}`}>
+                    <div className={`w-2 h-2 rounded-full ${toast.type === 'success' ? 'bg-emerald-400' : toast.type === 'error' ? 'bg-red-400' : 'bg-amber-400 animate-pulse'}`}></div>
+                    <span className="font-orbitron text-[10px] tracking-[0.2em] uppercase">{toast.message}</span>
+                </div>
+            </div>
+        )}
+
         {isSettingsOpen && <SettingsPanel currentSettings={personalitySettings} currentTtsSettings={ttsSettings} currentMusicSettings={musicSettings} onSave={(p, t, m, newKey) => { setPersonalitySettings(p); setTtsSettings(t); setMusicSettings(m); if (newKey) setSessionApiKey(newKey); setIsSettingsOpen(false); }} onClose={() => setIsSettingsOpen(false)} voices={voices} onTestVoice={(o) => speak("Signal testing.", o)} onExport={handleExportBrain} onImport={handleImportBrain} />}
         {isKurisuProfileOpen && <KurisuProfilePanel onClose={() => setIsKurisuProfileOpen(false)} />}
         {isMemoriesOpen && <MemoryArchivePanel isOpen={isMemoriesOpen} memories={memories} onClose={() => setIsMemoriesOpen(false)} />}
@@ -297,7 +445,7 @@ const App: React.FC = () => {
             <ChatWindow messages={activeConversation?.messages || []} onSendMessage={processAndRespond} onAnalyzeFrame={async () => null} isLoading={isLoading} isWebSearchEnabled={sessionSettings.isWebSearchEnabled} onToggleWebSearch={() => setSessionSettings(prev => ({...prev, isWebSearchEnabled: !prev.isWebSearchEnabled}))} reasoningMode={sessionSettings.reasoningMode} onSetReasoningMode={(m) => setSessionSettings(prev => ({...prev, reasoningMode: m}))} isCannedModeOnly={sessionSettings.isCannedModeOnly} onToggleCannedModeOnly={() => setSessionSettings(prev => ({...prev, isCannedModeOnly: !prev.isCannedModeOnly}))} isAudioLoreMode={sessionSettings.isAudioLoreMode} onToggleAudioLoreMode={() => setSessionSettings(prev => ({...prev, isAudioLoreMode: !prev.isAudioLoreMode}))} isListening={isListening} transcript={transcript} startListening={startListening} stopListening={stopListening} isSupported={isSupported} />
           </section>
         </main>
-        <HistoryPanel isOpen={isHistoryOpen} conversations={conversations} activeConversationId={activeConversationId} onNewChat={handleStartNewChat} onSwitchChat={(id) => { setActiveConversationId(id); setIsHistoryOpen(false); }} onDeleteChat={(id) => setConversations(prev => prev.filter(c => c.id !== id))} onClose={() => setIsHistoryOpen(false)} synthesizingId={null} />
+        <HistoryPanel isOpen={isHistoryOpen} conversations={conversations} activeConversationId={activeConversationId} onNewChat={handleStartNewChat} onSwitchChat={(id) => { setActiveConversationId(id); setIsHistoryOpen(false); }} onDeleteChat={(id) => setConversations(prev => prev.filter(c => c.id !== id))} onClose={() => setIsHistoryOpen(false)} synthesizingId={isSynthesizingId} onSynthesize={handleManualSynthesize} />
         {isAvatarMode && <AvatarView messages={activeConversation?.messages || []} onSendMessage={processAndRespond} isLoading={isLoading} isSpeaking={isSpeaking} isGlitching={isGlitching} expression={'normal'} onExit={() => setIsAvatarMode(false)} isListening={isListening} transcript={transcript} startListening={startListening} stopListening={stopListening} playSound={playSound} playTypingSound={() => {}} />}
         <audio ref={soundAudioRef} className="hidden" /><audio ref={bgmAudioRef} className="hidden" />
     </div>

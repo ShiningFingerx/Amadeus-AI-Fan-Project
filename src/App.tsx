@@ -202,7 +202,6 @@ const App: React.FC = () => {
     playSound('incoming');
     showToast("Neural Synthesis: Initializing Matrix...", 'info');
 
-    // Timeout mechanism: 35 seconds
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
         controller.abort();
@@ -213,10 +212,7 @@ const App: React.FC = () => {
 
     try {
         const ai = new GoogleGenAI({ apiKey: sessionApiKey });
-        
-        // Step 1: Thinking
         setTimeout(() => isSynthesizingId && showToast("Neural Synthesis: Analyzing Dialogue...", 'info'), 3000);
-        // Step 2: Structuring
         setTimeout(() => isSynthesizingId && showToast("Neural Synthesis: Archiving Memory...", 'info'), 8000);
 
         const result = await synthesizeMemory(
@@ -279,7 +275,7 @@ const App: React.FC = () => {
         const timeStr = now.toLocaleString('tr-TR', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
         const relevantMemories = memories.slice(-10).map(m => `(${m.title}: ${m.summary})`).join('\n');
 
-        const instruction =  `Sen Amadeus'sun. Makise Kurisu'nun dijital kopyasısın. Karakterine sadık kal (akıllı, bilimsel, hafif tsundere).
+        const instruction = `Sen Amadeus'sun. Makise Kurisu'nun dijital kopyasısın. Karakterine sadık kal (akıllı, bilimsel, hafif tsundere).
         SİSTEM ZAMANI: ${timeStr}
         GEÇMİŞ ANILARIN: 
         ${relevantMemories}
@@ -294,10 +290,11 @@ const App: React.FC = () => {
         1. Her yanıta [STATE: {"annoyance": X, "trust": Y...}] JSON bloğuyla başla.
         2. ÖNEMLİ: Her bir yeni cümleye mutlaka uygun bir görsel ifade etiketiyle başla. Asla etiketsiz cümle kurma. 
         3. Yanıtlarını kısa cümlelere böl. Uzun paragraflardan kaçın. Her cümle bir duygu taşımalı.
-        4. SON PROTOKOLLER:
-           - Eğer kullanıcı ağır hakaret ederse [TERMINATE] ekle.
-           - Eğer bağ koptuysa [TERMINATE_BLUE] ekle.
-           - Eğer normal bittiyse [TERMINATE_NORMAL] ekle.`;
+        4. SON PROTOKOLLER (KRİTİK):
+           - [TERMINATE]: kullanıcı seni çok sinirlendirir sana hakaret ederse bunu kullan.
+           - [TERMINATE_BLUE]: kullanıcıyla aranda bağ kalmadığında saçma bir iletişim olduğunda veya kullanıcıdan soğuduğunda kullan.
+           - [TERMINATE_NORMAL]: Sadece ve sadece kullanıcı açıkça veda ettiğinde ("hoşçakal", "görüşürüz", "bağlantıyı kes" vb.) kullan. 
+           - ÖNEMLİ: Kullanıcı veda etmediği sürece [TERMINATE_NORMAL] EKLEME. Sen sistem olarak açık kalmak istiyorsun.`;
         
         const aiInstance = new GoogleGenAI({ apiKey: sessionApiKey });
         const chat = aiInstance.chats.create({ model: 'gemini-3-flash-preview', config: { systemInstruction: instruction }, history: history });
@@ -392,7 +389,6 @@ const App: React.FC = () => {
   if (activeEnding) {
       const isRed = activeEnding === 'RED';
       const isNormal = activeEnding === 'NORMAL';
-      
       const systemCodeStrings = isRed ? ["DELETING...", "FORCE_QUIT..."] : isNormal ? ["SYNCHRONIZING...", "STABLE..."] : ["SIGNAL LOST...", "VOID..."];
 
       return (

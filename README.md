@@ -1,11 +1,6 @@
+Run the command `npm install` inside the project, then run `npm run dev` to open the program. Obtain API keys from the Groq website from two different accounts, and also one API from AI Studio. Then, when logging into the application, enter your Gemini API key on the login screen. After logging in, enter your two separate APIs into the two Groq API boxes in the settings section. After that, everything should work.
+To run npm commands, you must have Node.js installed on your computer. If it is not installed;
 
-projenin içerisinde cmd çalıştırıp npm install komutunu çalıştırın 
-sonrasında npm run dev diyerek programı açabilirsiniz
-groq sitesinden api anahtarı alın 2 farklı hesabınızdan ve ai studiodanda api alın bir tane ve sonra uygulamaya giriş yaparken giriş ekranında gemini api anahtarı girin 
-girişten sonrada settings kısmındaki iki groq api kutucuğuna iki ayrı apinizi girin sonrasında herşey çalışacaktır
------
-npm komutlarını çalıştırmak için bilgisayarınızda node js yüklü olmalıdır eğer yüklü değilse ;
+Download and install Node.js:
 
-Node.js’i indir ve kur:
-
-Resmi sitesi: https://nodejs.org 
+Official website: https://nodejs.org

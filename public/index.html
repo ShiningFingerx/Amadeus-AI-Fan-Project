@@ -1,0 +1,191 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Amadeus AI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Electrolize&family=Orbitron:wght@400;700&family=Roboto+Mono:wght@400;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      ::-webkit-scrollbar { width: 4px; height: 4px; }
+      ::-webkit-scrollbar-track { background: rgba(0, 0, 0, 0.3); }
+      ::-webkit-scrollbar-thumb { background: #ff8c00; border-radius: 10px; }
+
+      html, body, #root { height: 100vh; width: 100vw; margin: 0; padding: 0; overflow: hidden; background-color: #000000; }
+      body { font-family: 'Electrolize', sans-serif; }
+
+      body::before {
+        content: " "; display: block; position: absolute; top: 0; left: 0; bottom: 0; right: 0;
+        background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.15) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+        z-index: 1000; background-size: 100% 4px, 3px 100%; pointer-events: none;
+      }
+
+      /* --- ANIMATIONS --- */
+      @keyframes slide-in-top {
+          0% { transform: translateY(-100%); opacity: 0; }
+          100% { transform: translateY(0); opacity: 1; }
+      }
+      .animate-slide-in-top { animation: slide-in-top 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+
+      @keyframes glitch-shake {
+        0% { transform: translate(0); }
+        20% { transform: translate(-5px, 5px); }
+        40% { transform: translate(-5px, -5px); }
+        60% { transform: translate(5px, 5px); }
+        80% { transform: translate(5px, -5px); }
+        100% { transform: translate(0); }
+      }
+
+      @keyframes glitch-color {
+        0% { text-shadow: 2px 0 red, -2px 0 blue; }
+        25% { text-shadow: -2px 0 red, 2px 0 blue; }
+        50% { text-shadow: 2px 0 blue, -2px 0 green; }
+        75% { text-shadow: -2px 0 green, 2px 0 red; }
+        100% { text-shadow: 2px 0 red, -2px 0 blue; }
+      }
+
+      @keyframes glitch-flicker {
+        0% { opacity: 1; }
+        10% { opacity: 0.1; }
+        20% { opacity: 1; }
+        30% { opacity: 0.8; }
+        40% { opacity: 0.2; }
+        50% { opacity: 1; }
+        100% { opacity: 1; }
+      }
+
+      .cognitive-glitch {
+        animation: glitch-shake 0.1s infinite, glitch-flicker 0.2s infinite;
+        filter: hue-rotate(90deg) contrast(150%) brightness(120%);
+      }
+
+      .cognitive-glitch * {
+        animation: glitch-color 0.1s infinite !important;
+      }
+
+      @keyframes scroll-code { 
+        0% { transform: translateY(-50%); } 
+        100% { transform: translateY(0%); } 
+      }
+
+      .ending-red { background: #000000 !important; }
+      .ending-blue { background: radial-gradient(circle at center, #001a1a 0%, #000 100%); }
+      .ending-normal { background: radial-gradient(circle at center, #062a1e 0%, #000 100%); }
+
+      .neural-node {
+        position: absolute;
+        width: 3px; height: 3px;
+        background: #22d3ee;
+        border-radius: 50%;
+        box-shadow: 0 0 15px #22d3ee, 0 0 30px #0891b2;
+        animation: float-neural 15s linear infinite;
+      }
+
+      @keyframes float-neural {
+        0% { transform: translateY(110vh) translateX(0); opacity: 0; }
+        20% { opacity: 0.6; }
+        80% { opacity: 0.6; }
+        100% { transform: translateY(-10vh) translateX(20px); opacity: 0; }
+      }
+
+      @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+      .animate-fade-in { animation: fade-in 1s ease-out forwards; }
+
+      .glass-panel {
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(245, 158, 11, 0.2);
+      }
+
+      /* --- TYPEWRITER CURSOR EFFECT --- */
+      @keyframes blink { 
+        0%, 100% { opacity: 1; } 
+        50% { opacity: 0; } 
+      }
+      .animate-blink { 
+        animation: blink 1s step-end infinite; 
+      }
+
+      /* --- ESSENTIAL UI ANIMATIONS --- */
+      @keyframes spin-slow {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+      }
+      @keyframes spin-slow-reverse {
+        from { transform: rotate(360deg); }
+        to { transform: rotate(0deg); }
+      }
+      .animate-spin-slow { animation: spin-slow 10s linear infinite; transform-origin: center; }
+      .animate-spin-slow-reverse { animation: spin-slow-reverse 15s linear infinite; transform-origin: center; }
+
+      .glitch { position: relative; display: inline-block; }
+      .glitch::before, .glitch::after {
+        content: attr(data-text);
+        position: absolute;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background: transparent;
+      }
+      .glitch::before {
+        left: 2px; text-shadow: -1px 0 red;
+        clip: rect(24px, 550px, 90px, 0);
+        animation: glitch-anim-2 3s infinite linear alternate-reverse;
+      }
+      .glitch::after {
+        left: -2px; text-shadow: -1px 0 blue;
+        clip: rect(85px, 550px, 140px, 0);
+        animation: glitch-anim 2.5s infinite linear alternate-reverse;
+      }
+      @keyframes glitch-anim {
+        0% { clip: rect(11px, 9999px, 53px, 0); }
+        20% { clip: rect(33px, 9999px, 44px, 0); }
+        40% { clip: rect(99px, 9999px, 55px, 0); }
+        60% { clip: rect(11px, 9999px, 99px, 0); }
+        80% { clip: rect(77px, 9999px, 33px, 0); }
+        100% { clip: rect(44px, 9999px, 88px, 0); }
+      }
+      @keyframes glitch-anim-2 {
+        0% { clip: rect(65px, 9999px, 100px, 0); }
+        20% { clip: rect(67px, 9999px, 61px, 0); }
+        40% { clip: rect(23px, 9999px, 98px, 0); }
+        60% { clip: rect(30px, 9999px, 16px, 0); }
+        80% { clip: rect(47px, 9999px, 73px, 0); }
+        100% { clip: rect(38px, 9999px, 49px, 0); }
+      }
+
+      @keyframes slide-in-right {
+        0% { transform: translateX(100%); opacity: 0; }
+        100% { transform: translateX(0); opacity: 1; }
+      }
+      .animate-slide-in-right { animation: slide-in-right 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+
+      @keyframes slide-in-left {
+        0% { transform: translateX(-100%); opacity: 0; }
+        100% { transform: translateX(0); opacity: 1; }
+      }
+      .animate-slide-in-left { animation: slide-in-left 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both; }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react/": "https://esm.sh/react@^19.2.3/",
+    "react": "https://esm.sh/react@^19.2.3",
+    "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+    "react-markdown": "https://esm.sh/react-markdown@^10.1.0",
+    "@google/genai": "https://esm.sh/@google/genai@^1.34.0",
+    "remark-gfm": "https://esm.sh/remark-gfm@^4.0.1",
+    "three": "https://esm.sh/three@^0.182.0",
+    "three/": "https://esm.sh/three@^0.182.0/",
+    "@pixiv/three-vrm": "https://esm.sh/@pixiv/three-vrm@^3.4.4"
+  }
+}
+</script>
+</head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="index.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{
+  "name": "Copy of *xXXAMADEUS VERSİON 1.42 dal 10",
+  "short_name": "AMADEUS",
+  "description": "An interactive AI assistant inspired by Amadeus from Steins;Gate, powered by Gemini. Engage in conversation with a digital recreation of the brilliant neuroscientist Makise Kurisu.",
+  "start_url": ".",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ff8c00",
+  "requestFramePermissions": [
+    "microphone",
+    "camera"
+  ]
+}

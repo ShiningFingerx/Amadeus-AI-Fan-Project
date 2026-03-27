@@ -4,3 +4,5 @@ To run npm commands, you must have Node.js installed on your computer. If it is 
 Download and install Node.js:
 
 Official website: https://nodejs.org
+
+promotional video : https://www.youtube.com/watch?v=lYBvkm0pVYo

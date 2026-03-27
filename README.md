@@ -6,3 +6,5 @@ Download and install Node.js:
 Official website: https://nodejs.org
 
 promotional video : https://www.youtube.com/watch?v=lYBvkm0pVYo
+
+The latest version is open source code.

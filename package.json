@@ -1,0 +1,78 @@
+{
+  "name": "amadeus-ai-desktop",
+  "version": "1.4.2",
+  "description": "Amadeus AI Cognitive Simulation",
+  "main": "main.js",
+  "author": "FG Lab",
+  "homepage": ".",
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject",
+    "lint": "eslint src --ext .ts,.tsx",
+    "electron:start": "electron .",
+    "electron:build": "npm run build && electron-builder",
+    "generate-lore": "node scripts/generate-lore-data.js",
+    "dev": "concurrently \"npm start\" \"wait-on http://localhost:3000 && npm run electron:start\""
+  },
+  "dependencies": {
+    "@google/genai": "^1.34.0",
+    "@pixiv/three-vrm": "^3.4.4",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-markdown": "^9.0.1",
+    "react-scripts": "5.0.1",
+    "remark-gfm": "^4.0.0",
+    "three": "^0.182.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "concurrently": "^8.2.2",
+    "electron": "^29.1.5",
+    "electron-builder": "^24.13.3",
+    "wait-on": "^7.2.0"
+  },
+  "build": {
+    "appId": "com.amadeus.ai",
+    "productName": "Amadeus AI",
+    "copyright": "Copyright © 2024 FG Lab",
+    "extends": null,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "build/**/*",
+      "main.js",
+      "preload.js"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "portable",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "build/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true
+    }
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  }
+}

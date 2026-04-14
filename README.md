@@ -7,7 +7,6 @@ Official website: https://nodejs.org
 
 promotional video : https://www.youtube.com/watch?v=lYBvkm0pVYo
 
-The latest version is open source code.
 
 The application is an advanced digital consciousness simulation system based on the character of Makise Kurisu. The system includes 13 separate neuroscientific modules (Amygdala, Prefrontal Cortex, Hippocampus, Temporoparietal Junction, Anterior Cingulate Cortex, Insula, and others). These modules operate in parallel via Groq and Gemini APIs to model processes such as emotional state analysis, attachment dynamics, cognitive fatigue, mirror neuron simulation, defense mechanisms, and habituation.
 The core architecture is built upon a conceptual neural network that incorporates spreading activation, temporal momentum, and Hebbian learning rules. Thanks to personality evolution (Personality Drift), long-term memory consolidation, and offline presence mechanisms, the relationship with the user can evolve permanently over time. The system also includes synthetic memory synthesis, cognitive dissonance triggers, and biological homeostasis models. It updates emotional states, neurochemical values, and neural activation levels with each interaction.
